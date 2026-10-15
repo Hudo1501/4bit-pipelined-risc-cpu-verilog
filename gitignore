@@ -1,0 +1,70 @@
+# ---------------------------------------------------------------
+# Simulation output: Icarus Verilog / GTKWave
+# ---------------------------------------------------------------
+*.vvp
+*.vcd
+*.fst
+*.lxt
+*.lxt2
+*.gtkw
+
+# ---------------------------------------------------------------
+# Simulation output: ModelSim / Questa
+# ---------------------------------------------------------------
+work/
+transcript
+*.wlf
+vsim.wlf
+modelsim.ini
+
+# ---------------------------------------------------------------
+# Xilinx Vivado (generated files)
+# ---------------------------------------------------------------
+.Xil/
+*.jou
+*.log
+*.str
+*.backup.*
+*.cache/
+*.hw/
+*.runs/
+*.sim/
+*.gen/
+*.ip_user_files/
+*.srcs/
+*.wdb
+xsim.dir/
+webtalk*.jou
+webtalk*.log
+vivado*.backup.jou
+vivado*.backup.log
+hs_err_pid*
+
+# Vivado project file (machine-specific absolute paths)
+*.xpr
+
+# ---------------------------------------------------------------
+# Intel Quartus (in case the design is ported)
+# ---------------------------------------------------------------
+db/
+incremental_db/
+output_files/
+*.qws
+
+# ---------------------------------------------------------------
+# Bitstreams and large binaries (share them via GitHub Releases)
+# ---------------------------------------------------------------
+*.bit
+*.bin
+*.ltx
+
+# ---------------------------------------------------------------
+# Editors and operating systems
+# ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
