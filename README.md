@@ -47,6 +47,14 @@ The design is modular (11 source files), fully documented in-line, and verified 
 
 A detailed design report (diagrams, truth tables, waveforms and the Vivado flow) is available in [`doc/CPU_4bit_Datapath_Report.pdf`](doc/CPU_4bit_Datapath_Report.pdf).
 
+**Quick start** (requires [Icarus Verilog](https://steveicarus.github.io/iverilog/)):
+
+```bash
+cd programs
+iverilog -g2005 -o ../tb_cpu.vvp ../rtl/*.v ../testbench/tb_cpu.v
+vvp ../tb_cpu.vvp          # prints "tb_cpu PASSED: 44 of 44 checks OK"
+```
+
 ## 2. Key Features
 
 | Feature | Description |
@@ -83,17 +91,17 @@ A detailed design report (diagrams, truth tables, waveforms and the Vivado flow)
 
 Instructions and data live in two separate memories with independent address paths. The Fetch stage reads the instruction memory while the Execute stage may access the data memory in the same cycle, so there is no structural hazard.
 
-### 3.4 Datapath at a Glance
+### 3.4 Data Flow at a Glance
 
 ```
-          IF                    ID                      EX
-   +---------------+     +---------------+     +-----------------------------+
-   | PC  -> IMEM   | --> | IF/ID  -> CU  | --> | ID/EX -> RF -> ALU -> DMEM  |
-   +---------------+     +---------------+     |            |   |            |
-          ^                                    |         FLAGS  WB MUX -> RF |
-          |                                    +-----------------------------+
-          +------------ pc_sel, flush, jump address (from branch unit in EX) -+
+ IF                      ID                       EX
+ PC -> IMEM -> [IF/ID] -> Decoder -> [ID/EX] -> RF -> ALU -> DMEM -> WB MUX -> RF (write Rd)
+ ^                                                 |
+ |                                               FLAGS (Z, C)
+ +---- jump address, pc_sel, flush <---- Branch unit (EX) <-- Zero flag
 ```
+
+`[IF/ID]` and `[ID/EX]` are the two pipeline registers. The red path in the block diagram above (jump address, `pc_sel`, `flush`) is the only signal that travels backwards in the pipeline.
 
 ## 4. Instruction Set Architecture (ISA)
 
@@ -165,7 +173,7 @@ Instr 3:              IF   ID   EX
 Instr 4:                   IF   ID   EX
 ```
 
-N instructions finish after **N + 2** clock cycles (pipeline fill latency of 2).
+For straight-line code (no taken jump), N instructions finish after **N + 2** clock cycles (the 2 extra cycles are the pipeline fill latency). Each taken jump adds 2 more cycles.
 
 ### 5.2 Real Trace (from the testbench)
 
@@ -408,13 +416,13 @@ Write one 12-bit instruction per line in hexadecimal (see [Section 4](#4-instruc
 A03     // JMP 3
 ```
 
-Save it as a `.mem` file (at most 16 lines; unused addresses default to NOP) and pass its name through the `PROGRAM_FILE` parameter of `cpu_top`:
+Save it as a `.mem` file with **exactly 16 lines**: fill the unused lines with `C00` (NOP). A shorter file still works because unused addresses default to NOP, but the simulator prints a harmless "Not enough words in the file" warning. Then pass the file name through the `PROGRAM_FILE` parameter of `cpu_top`:
 
 ```verilog
 cpu_top #(.PROGRAM_FILE("my_program.mem")) CPU ( /* ports */ );
 ```
 
-> A program normally ends with a `JMP` to its own address (for example `A03` at address 3) so the PC does not run into the NOPs and wrap around.
+> End a program with a `JMP` to its own address (for example `A03` at address 3). The CPU then keeps re-executing that jump, and the flush discards the instructions fetched after it, so execution never runs into the NOPs or wraps around to address 0. Because the jump takes 2 cycles to resolve, the fetch address (`pc_out`) cycles through the next two addresses while the program is parked.
 
 ## 11. Test Programs
 
@@ -516,7 +524,7 @@ Every testbench is **self-checking**: it compares actual results against expecte
 | TEST 4 | `prog_jump.mem` | 11 | PC increment, `JMP`, `JZ` taken / not taken, flush of the ID/EX register, skipped instructions |
 | TEST 5 | reset | 8 | Reset values of PC, registers and flags, empty pipeline registers, no unknown (`X`) values |
 
-The testbench waits for each instruction to reach the Execute stage and checks the registers, flags, PC and memory right after it completes. Total latency is `N + 2` cycles for `N` instructions (for example 9 instructions in 11 cycles, 12 instructions in 14 cycles).
+The testbench waits for each instruction to reach the Execute stage and checks the registers, flags, PC and memory right after it completes. For straight-line programs the total time is `N + 2` cycles for `N` instructions (for example 9 instructions in 11 cycles, 12 instructions in 14 cycles).
 
 ## 13. Results
 
