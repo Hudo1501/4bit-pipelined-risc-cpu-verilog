@@ -8,7 +8,7 @@
 
 RTL design and verification of a **4-bit, 3-stage pipelined RISC CPU** with a **Harvard architecture** and a **12-bit instruction word**, written in Verilog HDL, simulated with self-checking testbenches, and synthesized for a Xilinx Kintex-7 FPGA in Vivado.
 
-![Top-level diagram of the CPU](doc/images/top_level_diagram.png)
+![Top-level diagram of the CPU](doc/top_level_diagram.png)
 
 ---
 
@@ -45,6 +45,8 @@ This project is a small educational processor built from scratch in Verilog. It 
 
 The design is modular (11 source files), fully documented in-line, and verified by four self-checking testbenches (88 checks in total).
 
+A detailed design report (diagrams, truth tables, waveforms and the Vivado flow) is available in [`doc/CPU_4bit_Datapath_Report.pdf`](doc/CPU_4bit_Datapath_Report.pdf).
+
 ## 2. Key Features
 
 | Feature | Description |
@@ -67,7 +69,7 @@ The design is modular (11 source files), fully documented in-line, and verified 
 
 ### 3.1 Block Diagram
 
-![Block diagram of the 4-bit pipelined CPU](doc/images/block_diagram.png)
+![Block diagram of the 4-bit pipelined CPU](doc/block_diagram.png)
 
 ### 3.2 Pipeline Stages
 
@@ -97,7 +99,7 @@ Instructions and data live in two separate memories with independent address pat
 
 ### 4.1 Instruction Format
 
-![12-bit instruction format](doc/images/instruction_format.png)
+![12-bit instruction format](doc/instruction_format.png)
 
 | Bits | Field | Meaning |
 |---|---|---|
@@ -224,8 +226,12 @@ The table below is taken from the cycle-by-cycle trace printed by `tb_cpu` while
 │   ├── prog_arith.mem
 │   ├── prog_logic.mem
 │   └── prog_jump.mem
-├── doc/
-│   └── images/                   # Diagrams and waveform used in this README
+├── doc/                          # Report and figures used in this README
+│   ├── CPU_4bit_Datapath_Report.pdf
+│   ├── top_level_diagram.png
+│   ├── block_diagram.png
+│   ├── instruction_format.png
+│   └── waveform_tb_cpu.png
 └── README.md
 ```
 
@@ -518,7 +524,7 @@ The testbench waits for each instruction to reach the Execute stage and checks t
 
 Behavioral simulation of `tb_cpu` in Vivado XSim (clock, reset, `pc_out`, `alu_out`, `wb_data_out`, `instr_out`, `zero_out`, `carry_out`):
 
-![Waveform of tb_cpu](doc/images/waveform_tb_cpu.png)
+![Waveform of tb_cpu](doc/waveform_tb_cpu.png)
 
 The waveform shows the five test phases separated by resets: the PC counting up and jumping back on `JMP`/`JZ`, the Zero and Carry flags rising at the expected instructions, and `errors = 0` for the whole run.
 
